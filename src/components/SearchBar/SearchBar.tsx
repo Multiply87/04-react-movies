@@ -1,20 +1,25 @@
+import { type SyntheticEvent } from "react";
+import toast from "react-hot-toast";
 import styles from "./SearchBar.module.css";
-import type { SearchMovieHandler } from "../App/App";
-import { toast } from "react-hot-toast";
 
 interface SearchBarProps {
-  onSubmit: SearchMovieHandler;
+  onSubmit: (query: string) => void;
 }
 
-export default function SearchBar(props: SearchBarProps) {
-  const { onSubmit } = props;
-  const handleSubmit = (formData: FormData) => {
-    const query = formData.get("query") as string;
+export default function SearchBar({ onSubmit }: SearchBarProps) {
+  const handleSubmit = (event: SyntheticEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const query = (formData.get("query") as string)?.trim();
+
     if (!query) {
-      toast("Please enter your search query.");
-    } else {
-      onSubmit(query);
+      toast.error("Please enter a search query.");
+      return;
     }
+
+    onSubmit(query);
   };
 
   return (
@@ -28,7 +33,7 @@ export default function SearchBar(props: SearchBarProps) {
         >
           Powered by TMDB
         </a>
-        <form className={styles.form} action={handleSubmit}>
+        <form className={styles.form} onSubmit={handleSubmit}>
           <input
             className={styles.input}
             type="text"
